@@ -24,64 +24,81 @@ public class Grid
 
     public void SetValue (int x, int y, Cell value) {
         grid[x,y] = value;
+        value.UpdatePos(x,y);
     }
 
-    public Cell GetCell (int x, int y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return null;
-        return grid[y,x];
-    }
-
-    public void CellSwaping (int ax, int ay, int bx, int by) {
-        Cell a = grid[ay, ax];
-        Cell b = grid[by, bx];
-
-        grid[ay, ax] = b;
-        grid[by, bx] = a;
-    }
-
-    public void ForEachElement(Action<Cell> action) {
-        for (int i = 0; i < GetRowsAmount(); i++) {
-            for (int j = 0; j < GetColumnsAmount(); j ++) {
-                action(GetCell(i,j));
+    public void ForEachElement (Action<Cell> callback) {
+        for (int i = 0 ; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                callback?.Invoke(GetCell(i,j));
             }
         }
     }
 
-    List<Cell> GetNeighboringCells (int x, int y) {
+    public Cell GetCell (int x, int y) {
+        if (x < 0 || x >= width || y < 0 || y >= height) return null;
+        return grid[x,y];
+    }
+
+    public void CellSwaping (Cell a, Cell b) {
+        int ax = a.x;
+        int ay = a.y;
+
+        int bx = b.x;
+        int by = b.y;
+
+        SetValue(ax, ay, b);
+        SetValue(bx, by, a);
+    }
+
+    List<Cell> GetNeighboringCells (Cell cell) {
         List<Cell> cells = new List<Cell>();
         
-        cells.AddIfNotNull(GetCell(x - 1, y));
-        cells.AddIfNotNull(GetCell(x + 1, y));
-        cells.AddIfNotNull(GetCell(x, y - 1));
-        cells.AddIfNotNull(GetCell(x, y + 1));
+        cells.AddIfNotNull(GetCell(cell.x - 1, cell.y));
+        cells.AddIfNotNull(GetCell(cell.x + 1, cell.y));
+        cells.AddIfNotNull(GetCell(cell.x, cell.y - 1));
+        cells.AddIfNotNull(GetCell(cell.x, cell.y + 1));
         return cells;
     }
 
     public bool IsNeighbour (Cell a, Cell b) {
-        return GetNeighboringCells(a.x, a.y).Contains(b);
+        //GetNeighboringCells(a).ForEach(v => Debug.Log("vecino de " + a + " : | " + v + " | yo pregunto por " + b));
+        return GetNeighboringCells(a).Contains(b);
     }
 
-    public List<Cell> GetNeighboringCellsOfSameType (int x, int y) {
-        Cell cell = GetCell(x,y);
-        var cells = GetNeighboringCells(x,y);
-        return GetNeighboringCells(x,y).FindAll(nCell => nCell.type == cell.type);
+    public List<Cell> GetNeighboringCellsOfSameType (Cell cell) {
+        var cells = GetNeighboringCells(cell);
+        return GetNeighboringCells(cell).FindAll(nCell => nCell.type == cell.type);
     }
 
-    public HashSet<Cell> GetAllConectedCells (int x, int y, HashSet<Cell> connected) {
-        Cell cell = GetCell(x,y);
-        if (connected.Contains(cell)) return new HashSet<Cell>();
+    public List<Cell> GetConnectedLines (Cell cell) {
+        var result = new List<Cell>();
+        result.Add(cell);
 
-        connected.Add(cell);
-        var nei = GetNeighboringCellsOfSameType(cell.x, cell.y);
-
-        foreach (var c in nei) {
-            var result = GetAllConectedCells(c.x, c.y, connected);
-            connected.UnionWith(result);
+        var neigh = GetNeighboringCellsOfSameType(cell);
+        foreach (var n in neigh) {
+            int dirX = n.x - cell.x;
+            int dirY = n.y - cell.y;
+            var r = GetConnectedCellsInDirection(n, dirX, dirY);
+            if (r.Count > 1) result.AddRange(r);
         }
 
-        return connected;
+        return result.Count > 2 ? result : new List<Cell>();
     }
 
+    public List<Cell> GetConnectedCellsInDirection (Cell cell, int x, int y) {
+        int targetX = cell.x + x;
+        int targetY = cell.y + y;
+        var r = new List<Cell>();
+        r.Add(cell);
+
+        var tCell = GetCell(targetX, targetY);
+        if (tCell != null && tCell.type == cell.type) {
+            r.AddRange(GetConnectedCellsInDirection(tCell, x, y));
+        }
+
+        return r;
+    }
 
     public override string ToString()
     {

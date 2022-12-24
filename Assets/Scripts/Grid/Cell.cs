@@ -8,13 +8,13 @@ public class Cell
 {
     const int TYPES_LENGHT = 5;
 
-    public enum Type {A, B, C, D, E}
-    public Color[] colors = new Color[5] {Color.red, Color.blue, Color.yellow, Color.magenta, Color.green};
+    public enum Type {A, B, C, D, E, Disabled}
+    public Color[] colors = new Color[6] {Color.red, Color.blue, Color.yellow, Color.magenta, Color.green, Color.grey};
     public Type type;
     public int x;
     public int y;
 
-    public Action<int, int> onUpdatePos;
+    public Action<Cell> onUpdateCell;
     
     public Cell (Type type, int x, int y) {
         this.type = type;
@@ -31,7 +31,12 @@ public class Cell
     public void UpdatePos (int x, int y) {
         this.x = x;
         this.y = y;
-        onUpdatePos?.Invoke(x,y);
+        onUpdateCell?.Invoke(this);
+    }
+
+    public void DisableCell () {
+        this.type = Type.Disabled;
+        onUpdateCell?.Invoke(this);
     }
 
     public Color GetTypeColor () {

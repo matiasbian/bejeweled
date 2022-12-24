@@ -18,12 +18,17 @@ public class CellUI : MonoBehaviour
     public void SetCell (Cell cell) {
         sprite.color = cell.GetTypeColor();
         this.cell = cell;
-        UpdateText(cell.x, cell.y);
-        cell.onUpdatePos += UpdateText; 
+        UpdateText(cell);
+        cell.onUpdateCell += UpdateText; 
+        cell.onUpdateCell += UpdateColor; 
     }
 
-    void UpdateText (int x, int y) {
-        text.text = cell.type.ToString() + " x " + x + " y " + y;
+    void UpdateText (Cell cell) {
+        text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
+    }
+
+    void UpdateColor (Cell cell) {
+        sprite.color = cell.colors[(int) cell.type];
     }
 
     public void Click () {
