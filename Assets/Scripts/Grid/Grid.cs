@@ -31,6 +31,14 @@ public class Grid
         return grid[y,x];
     }
 
+    public void CellSwaping (int ax, int ay, int bx, int by) {
+        Cell a = grid[ay, ax];
+        Cell b = grid[by, bx];
+
+        grid[ay, ax] = b;
+        grid[by, bx] = a;
+    }
+
     public void ForEachElement(Action<Cell> action) {
         for (int i = 0; i < GetRowsAmount(); i++) {
             for (int j = 0; j < GetColumnsAmount(); j ++) {
@@ -49,13 +57,17 @@ public class Grid
         return cells;
     }
 
+    public bool IsNeighbour (Cell a, Cell b) {
+        return GetNeighboringCells(a.x, a.y).Contains(b);
+    }
+
     public List<Cell> GetNeighboringCellsOfSameType (int x, int y) {
         Cell cell = GetCell(x,y);
         var cells = GetNeighboringCells(x,y);
         return GetNeighboringCells(x,y).FindAll(nCell => nCell.type == cell.type);
     }
 
-    public HashSet<Cell> GetAllConectedCells (int x, int y, HashSet<Cell> connected = null) {
+    public HashSet<Cell> GetAllConectedCells (int x, int y, HashSet<Cell> connected) {
         Cell cell = GetCell(x,y);
         if (connected.Contains(cell)) return new HashSet<Cell>();
 

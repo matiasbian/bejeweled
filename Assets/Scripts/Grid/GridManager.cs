@@ -7,7 +7,10 @@ public class GridManager : MonoBehaviour
     public CellUI cellPrefab;
     public Transform cellsContainer;
     Grid grid;
-    public HashSet<Cell> finalList = new HashSet<Cell>();
+
+    CellUI fstPickedCell;
+    CellUI sndPickedCell;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -31,9 +34,54 @@ public class GridManager : MonoBehaviour
         return grid;
     }
 
-    public void CellClicked (Cell cell) {
-        Debug.Log("Cell clicked " + cell.x + " " + cell.y);
-        finalList = grid.GetAllConectedCells(cell.x,cell.y, new HashSet<Cell>());
-        foreach(var e in finalList) Debug.Log(e);
+    public void CellClicked (CellUI cell) {
+        Debug.Log("Cell clicked " + cell.GetCell());
+
+        if (!fstPickedCell) {
+            fstPickedCell = cell;
+        } else {
+            sndPickedCell = cell;
+            Debug.Log("FIRST PICK: " + fstPickedCell.GetCell() + " SECOND PICK " + sndPickedCell.GetCell());
+            SpawCellPositions(fstPickedCell, sndPickedCell);
+            PrintCellConnections(fstPickedCell.GetCell());
+            PrintCellConnections(sndPickedCell.GetCell());
+            fstPickedCell = null;
+            sndPickedCell = null;
+        }
+
+
+        //var finalList = grid.GetAllConectedCells(cell.x,cell.y, new HashSet<Cell>());
+        //foreach(var e in finalList) Debug.Log(e);
+    }
+
+    void PrintCellConnections (Cell a) {
+        Debug.Log("CELL: " + a + "----------");
+        var conn = grid.GetAllConectedCells(a.x, a.y, new HashSet<Cell>());
+        if (conn.Count > 2) {
+            Debug.Log("THERE'S A CONNECTION!");
+            foreach (var c in conn) Debug.Log("conn: " + c);
+        }
+    }
+
+    void SpawCellPositions (CellUI a, CellUI b) {
+        if (!grid.IsNeighbour(a.GetCell(), b.GetCell())) return;
+        int aPos = a.transform.GetSiblingIndex();
+        int bPos = b.transform.GetSiblingIndex();
+
+
+        int aX = a.GetCell().x;
+        int aY = a.GetCell().y;
+
+        int bX = b.GetCell().x;
+        int bY = b.GetCell().y;
+
+        grid.CellSwaping(aX, aY, bX, bY);
+        
+        a.transform.SetSiblingIndex(bPos);
+        a.GetCell().UpdatePos(bX, bY);
+        b.transform.SetSiblingIndex(aPos);
+        b.GetCell().UpdatePos(aX,aY);
+
+        
     }
 }

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
 [System.Serializable]
 public class Cell
 {
@@ -11,6 +13,8 @@ public class Cell
     public Type type;
     public int x;
     public int y;
+
+    public Action<int, int> onUpdatePos;
     
     public Cell (Type type, int x, int y) {
         this.type = type;
@@ -19,9 +23,15 @@ public class Cell
     }
 
     public static Cell GetRandomCell (int x, int y) {
-        int typeIndex = Random.Range(0,TYPES_LENGHT);
+        int typeIndex = UnityEngine.Random.Range(0,TYPES_LENGHT);
         Cell cell = new Cell((Cell.Type) typeIndex, x, y);
         return cell;
+    }
+
+    public void UpdatePos (int x, int y) {
+        this.x = x;
+        this.y = y;
+        onUpdatePos?.Invoke(x,y);
     }
 
     public Color GetTypeColor () {
