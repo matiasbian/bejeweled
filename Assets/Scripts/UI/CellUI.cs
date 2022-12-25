@@ -21,6 +21,7 @@ public class CellUI : MonoBehaviour
         UpdateText(cell);
         cell.onUpdateCell += UpdateText; 
         cell.onUpdateCell += UpdateColor; 
+        cell.SetCellUI(this);
     }
 
     void UpdateText (Cell cell) {
@@ -28,11 +29,27 @@ public class CellUI : MonoBehaviour
     }
 
     void UpdateColor (Cell cell) {
+        if (cell.hidden) {
+            sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
+            return;
+        }
+        if (cell.disabled) {
+            sprite.color = Color.white;
+            return;
+        }
         sprite.color = cell.colors[(int) cell.type];
     }
 
     public void Click () {
         onCellClicked?.Invoke(this);
+    }
+    
+    public void SelectCell () {
+        sprite.color = Color.white;
+    }
+
+    public void UnselectCell () {
+        UpdateColor(cell);
     }
 
     public Cell GetCell() {

@@ -5,9 +5,11 @@ using System;
 using System.Linq;
 public class Grid
 {
-    int height;
-    int width;
+    public int height;
+    public int width;
     Cell[,] grid;
+
+    public Action<Cell> cellUpdated;
     public Grid (int height, int width) {
         this.height = height;
         this.width = width;
@@ -35,6 +37,10 @@ public class Grid
         }
     }
 
+    public Cell GetOverCell (Cell cell) {
+        return GetCell(cell.x -1, cell.y);
+    }
+
     public Cell GetCell (int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) return null;
         return grid[x,y];
@@ -48,7 +54,10 @@ public class Grid
         int by = b.y;
 
         SetValue(ax, ay, b);
+        cellUpdated?.Invoke(b);
         SetValue(bx, by, a);
+        cellUpdated?.Invoke(a);
+
     }
 
     List<Cell> GetNeighboringCells (Cell cell) {
@@ -62,7 +71,7 @@ public class Grid
     }
 
     public bool IsNeighbour (Cell a, Cell b) {
-        //GetNeighboringCells(a).ForEach(v => Debug.Log("vecino de " + a + " : | " + v + " | yo pregunto por " + b));
+        
         return GetNeighboringCells(a).Contains(b);
     }
 
@@ -72,29 +81,38 @@ public class Grid
     }
 
     public List<Cell> GetConnectedLines (Cell cell) {
-        var result = new List<Cell>();
+        var result = new HashSet<Cell>();
         result.Add(cell);
-
         var neigh = GetNeighboringCellsOfSameType(cell);
         foreach (var n in neigh) {
-            int dirX = n.x - cell.x;
-            int dirY = n.y - cell.y;
-            var r = GetConnectedCellsInDirection(n, dirX, dirY);
-            if (r.Count > 1) result.AddRange(r);
+            int dirX = Mathf.Clamp(n.x - cell.x, -1, 1);
+            int dirY = Mathf.Clamp(n.y - cell.y, -1, 1);
+            //check for connected cells in both directions
+            var r = GetConnectedCellsInDirection(n, dirX, dirY, cell.type);
+            var r2 = GetConnectedCellsInDirection(n, -dirX , -dirY , cell.type, false);
+            //add to result list the conencted cells
+            HashSet<Cell> union = new HashSet<Cell>();
+            union.UnionWith(r);
+            union.UnionWith(r2);
+            if (union.Count > 2) {
+                result.UnionWith(union);
+            }
         }
-
-        return result.Count > 2 ? result : new List<Cell>();
+        //if there's a connection, return it, otherwise return a no connections list
+        return result.Count > 2 ? result.ToList() : new List<Cell>();
     }
 
-    public List<Cell> GetConnectedCellsInDirection (Cell cell, int x, int y) {
+    public List<Cell> GetConnectedCellsInDirection (Cell cell, int x, int y, Cell.Type type, bool addCell = true) {
         int targetX = cell.x + x;
         int targetY = cell.y + y;
         var r = new List<Cell>();
-        r.Add(cell);
+        
+        if (type != cell.type) return r;
+        if (addCell) r.Add(cell);
 
         var tCell = GetCell(targetX, targetY);
         if (tCell != null && tCell.type == cell.type) {
-            r.AddRange(GetConnectedCellsInDirection(tCell, x, y));
+            r.AddRange(GetConnectedCellsInDirection(tCell, x, y, type));
         }
 
         return r;
