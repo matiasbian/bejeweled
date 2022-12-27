@@ -25,12 +25,16 @@ public class CellUI : MonoBehaviour
     }
 
     void UpdateText (Cell cell) {
-        text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
+        if (!cell.hidden) {
+            text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
+        } else {
+            text.text = "";
+        }
     }
 
     void UpdateColor (Cell cell) {
         if (cell.hidden) {
-            sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
+            sprite.color = Color.clear;//new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
             return;
         }
         if (cell.disabled) {

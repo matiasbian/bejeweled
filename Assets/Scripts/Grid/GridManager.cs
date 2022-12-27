@@ -49,17 +49,49 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void CheckConnections () {
-        grid.ForEachElement(c => {
-            var conn = grid.GetConnectedLines(c);
-            conn.ForEach(c => {
-                c.HideCell();
-            });
+    /*void CheckConnections () {
+        bool noConn = false;
+        while (!noConn) {
+            Debug.Log("ITERATE");
+            noConn = true;
+            grid.ForEachElement(c => {
+                var conn = grid.GetConnectedLines(c);
+                conn.ForEach(c => {
+                    c.HideCell();
+                });
 
-            if (c.hidden) {
-                StartCoroutine(SlideDownPieces(c));
+                if (c.hidden) {
+                    noConn = false;
+                    SlideDownPieces(c);
+                    //StartCoroutine(SlideDownPieces(c));
+                }
+            }); 
+        }
+    }*/
+
+    IEnumerator CheckConnections () {
+        bool noConn = false;
+        while (!noConn) {
+            HashSet<Cell> toSlideDown = new HashSet<Cell>();
+            Debug.Log("ITERATE");
+            noConn = true;
+            for (int i = 0; i < grid.width; i++) {
+                for (int j = 0; j < grid.height; j++) {
+                    var c = grid.GetCell(i,j);
+                    var conn = grid.GetConnectedLines(c);
+
+                    if (conn.Count > 0 ) {
+                        noConn = false;
+                        toSlideDown.UnionWith(conn);
+                    }
+                }
             }
-        });
+            List<IEnumerator> cellCoro = new List<IEnumerator>();
+            foreach (var c in toSlideDown) cellCoro.Add(SlideDownPieces(c));
+
+            yield return this.WaitAll(cellCoro);
+        }
+        yield break;
     }
 
     void CheckSpecificConnections (List<Cell> cells) {
@@ -86,7 +118,7 @@ public class GridManager : MonoBehaviour
             Debug.LogWarning("This swipe is not generating a new connection, undoing");
             SpawCellPositions(fstPickedCell, sndPickedCell);
         } else {
-            CheckConnections();
+            StartCoroutine(CheckConnections());
         }
     }
 
@@ -114,7 +146,7 @@ public class GridManager : MonoBehaviour
     IEnumerator SlideDownPieces (Cell cell) {
         Cell cellOver = grid.GetOverCell(cell);
         yield return new WaitForSeconds(0.1f);
-        cell.DisableCell();
+        cell.HideCell();
         Debug.Log("Start SWIPPING");
         while (cellOver != null) {
             Debug.Log("SWIPPING");
