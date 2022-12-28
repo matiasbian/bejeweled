@@ -427,7 +427,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellPrefab: {fileID: 515697063224530555, guid: ad28da8362180dc4ea3291dfa5a880bb, type: 3}
   cellsContainer: {fileID: 1057497416}
-  panel: {fileID: 0}
+  generatingBoardText: {fileID: 1456008500}
   checkAll: 1
   parcialConn: 0
   reset: 0
@@ -444,7 +444,7 @@ Animation:
   m_Animations:
   - {fileID: 7400000, guid: a9ecb346751749f4fa2b73a395fa5237, type: 2}
   m_WrapMode: 0
-  m_PlayAutomatically: 1
+  m_PlayAutomatically: 0
   m_AnimatePhysics: 0
   m_CullingType: 0
 --- !u!1 &1073584508
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Generating board
+  m_text: Generating board...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
