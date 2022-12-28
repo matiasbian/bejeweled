@@ -1,22 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 public class GridManager : MonoBehaviour
 {
     public CellUI cellPrefab;
     public Transform cellsContainer;
+    public GameObject generatingBoardText;
+    Animation anim;
     Grid grid;
 
     CellUI fstPickedCell;
     CellUI sndPickedCell;
+    
 
     // Start is called before the first frame update
     void Start()
     {
+        anim = GetComponent<Animation>();
+        generatingBoardText.SetActive(true);
+        transform.localScale = Vector3.zero;
         grid = new Grid(8,8);
-        GenerateRandomGrid();
         CellUI.onCellClicked += CellClicked;
+        GenerateRandomGrid();
     }
 
     void GenerateRandomGrid () {
@@ -25,6 +31,10 @@ public class GridManager : MonoBehaviour
             var instance = Instantiate<CellUI>(cellPrefab, parent: cellsContainer);
             instance.SetCell(c);
         });
+        StartCoroutine(CheckConnections(() => {
+            generatingBoardText.SetActive(false);
+            anim.Play();
+        }));
     }
 
     public Grid RandomGridFill (Grid grid) {
@@ -49,27 +59,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    /*void CheckConnections () {
-        bool noConn = false;
-        while (!noConn) {
-            Debug.Log("ITERATE");
-            noConn = true;
-            grid.ForEachElement(c => {
-                var conn = grid.GetConnectedLines(c);
-                conn.ForEach(c => {
-                    c.HideCell();
-                });
-
-                if (c.hidden) {
-                    noConn = false;
-                    SlideDownPieces(c);
-                    //StartCoroutine(SlideDownPieces(c));
-                }
-            }); 
-        }
-    }*/
-
-    IEnumerator CheckConnections () {
+    IEnumerator CheckConnections (Action finishCallback = null) {
         bool noConn = false;
         while (!noConn) {
             HashSet<Cell> toSlideDown = new HashSet<Cell>();
@@ -79,7 +69,6 @@ public class GridManager : MonoBehaviour
                 for (int j = 0; j < grid.height; j++) {
                     var c = grid.GetCell(i,j);
                     var conn = grid.GetConnectedLines(c);
-
                     if (conn.Count > 0 ) {
                         noConn = false;
                         toSlideDown.UnionWith(conn);
@@ -91,17 +80,18 @@ public class GridManager : MonoBehaviour
 
             yield return this.WaitAll(cellCoro);
         }
+        finishCallback?.Invoke();
         yield break;
     }
 
-    void CheckSpecificConnections (List<Cell> cells) {
+    /*void CheckSpecificConnections (List<Cell> cells) {
         cells.ForEach(c => {
             var conn = grid.GetConnectedLines(c);
             conn.ForEach(c => {
                 c.HideCell();
             });
         });
-    }
+    }*/
 
     public bool checkAll;
     public bool parcialConn;
@@ -144,17 +134,17 @@ public class GridManager : MonoBehaviour
     }
 
     IEnumerator SlideDownPieces (Cell cell) {
+
         Cell cellOver = grid.GetOverCell(cell);
-        yield return new WaitForSeconds(0.1f);
         cell.HideCell();
+        yield return new WaitForSeconds(0.3f);
         Debug.Log("Start SWIPPING");
         while (cellOver != null) {
             Debug.Log("SWIPPING");
             SpawCellPositions(cell.ui, cellOver.ui);
             cellOver = grid.GetOverCell(cell);
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.05f);
         }
-        yield return new WaitForSeconds(1f);
         Debug.Log("GENERATING NEW cell");
         cell.EnableCell();
         cell.CreateNewOne();

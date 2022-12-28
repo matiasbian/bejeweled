@@ -10,9 +10,11 @@ public class CellUI : MonoBehaviour
     public TextMeshProUGUI text;
     public static Action<CellUI> onCellClicked;
     Cell cell;
+    Animator animator;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        animator = GetComponent<Animator>();
     }
 
     public void SetCell (Cell cell) {
@@ -20,28 +22,32 @@ public class CellUI : MonoBehaviour
         this.cell = cell;
         UpdateText(cell);
         cell.onUpdateCell += UpdateText; 
-        cell.onUpdateCell += UpdateColor; 
+        cell.onUpdateCell += UpdateColor;
+        cell.onHide += HideCell; 
         cell.SetCellUI(this);
+        cell.newCell += NewCell;
     }
 
     void UpdateText (Cell cell) {
-        if (!cell.hidden) {
-            text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
-        } else {
-            text.text = "";
-        }
+        text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
     }
 
     void UpdateColor (Cell cell) {
-        if (cell.hidden) {
-            sprite.color = Color.clear;//new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
-            return;
-        }
         if (cell.disabled) {
             sprite.color = Color.white;
             return;
         }
         sprite.color = cell.colors[(int) cell.type];
+    }
+
+    void HideCell (Cell cell) {
+        //sprite.color = Color.clear;//new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
+        animator.SetTrigger("Hide");
+        cell.hidden = false;
+    }
+
+    public void NewCell(Cell cell) {
+        animator.SetTrigger("PopUp");
     }
 
     public void Click () {

@@ -19,7 +19,8 @@ public class Cell
 
     public CellUI ui;
 
-    public Action<Cell> onUpdateCell;
+    public Action<Cell> onUpdateCell, newCell;
+    public Action<Cell> onHide;
     
     public Cell (Type type, int x, int y) {
         this.type = type;
@@ -55,7 +56,7 @@ public class Cell
 
     public void HideCell () {
         hidden = true;
-        onUpdateCell?.Invoke(this);
+        onHide?.Invoke(this);
     }
 
     public void ResetCell () {
@@ -73,6 +74,7 @@ public class Cell
         this.type = random.type;
         this.hidden = false;
         onUpdateCell?.Invoke(this);
+        newCell?.Invoke(this);
     }
 
 
