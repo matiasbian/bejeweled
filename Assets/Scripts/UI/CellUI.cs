@@ -35,6 +35,11 @@ public class CellUI : MonoBehaviour
             return;
         }
 
+        if (cell.error) {
+            sprite.color = Color.red;
+            return;
+        }
+
         int index = (int) cell.type;
         sprite.color = cell.GetTypeColor();
         icon.sprite = cell.GetTypeSprite();
@@ -44,6 +49,14 @@ public class CellUI : MonoBehaviour
         //sprite.color = Color.clear;//new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
         animator.SetTrigger("Hide");
         cell.hidden = false;
+    }
+
+    public void ShowError () {
+        cell.Error();
+    }
+
+    public void ClearError () {
+        cell.ClearError();
     }
 
     public void NewCell(Cell cell) {

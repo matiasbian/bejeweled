@@ -32,7 +32,7 @@ public class GridManager : MonoBehaviour
             var instance = Instantiate<CellUI>(cellPrefab, parent: cellsContainer);
             instance.SetCell(c);
         });
-        
+
         StartCoroutine(CheckConnections(() => {
             generatingBoardText.SetActive(false);
             anim.Play();
@@ -89,7 +89,7 @@ public class GridManager : MonoBehaviour
         
         if (!firstCellGeneratesConn && !sndCellGeneratesConn) {
             Debug.LogWarning("This swipe is not generating a new connection, undoing");
-            SpawCellPositions(fst, snd);
+            StartCoroutine(ReturnPieces(fst,snd));
         } else {
             StartCoroutine(CheckConnections());
         }
@@ -136,6 +136,17 @@ public class GridManager : MonoBehaviour
         cell.EnableCell();
         cell.CreateNewOne();
         
+        yield break;
+    }
+
+    IEnumerator ReturnPieces (CellUI a, CellUI b) {
+        a.ShowError();
+        b.ShowError();
+
+        yield return new WaitForSeconds(0.6f);
+        SpawCellPositions(a, b);
+        a.ClearError();
+        b.ClearError();
         yield break;
     }
 

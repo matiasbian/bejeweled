@@ -15,6 +15,7 @@ public class Cell
 
     public bool disabled;
     public bool hidden;
+    public bool error;
 
     public CellUI ui;
 
@@ -45,6 +46,16 @@ public class Cell
 
     public void DisableCell () {
         disabled = true;
+        onUpdateCell?.Invoke(this);
+    }
+
+    public void Error () {
+        error = true;
+        onUpdateCell?.Invoke(this);
+    }
+
+    public void ClearError () {
+        error = false;
         onUpdateCell?.Invoke(this);
     }
 
