@@ -7,7 +7,6 @@ using System;
 public class Cell
 {
     const int TYPES_LENGHT = 5;
-
     public enum Type {Lemon = 0, Orange = 1, Banana = 2, Watermelon = 3, Grape = 4}
     public Type type;
     public int x;
@@ -75,20 +74,19 @@ public class Cell
         onUpdateCell?.Invoke(this);
     }
 
-    public Color GetTypeColor () {
-        return ImageManager.Get().colors[(int) type];
-    }
-
-    public Sprite GetTypeSprite () {
-        return ImageManager.Get().icons[(int) type];
-    }
-
     public void CreateNewOne () {
         var random = Cell.GetRandomCell(x, y);
         this.type = random.type;
         this.hidden = false;
         onUpdateCell?.Invoke(this);
         newCell?.Invoke(this);
+    }
+    public Color GetTypeColor () {
+        return ImageManager.Get().colors[(int) type];
+    }
+
+    public Sprite GetTypeSprite () {
+        return ImageManager.Get().icons[(int) type];
     }
 
 

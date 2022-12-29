@@ -7,9 +7,9 @@ public class GridManager : MonoBehaviour
     public CellUI cellPrefab;
     public Transform cellsContainer;
     public GameObject generatingBoardText;
+
     Animation anim;
     Grid grid;
-
     CellUI fstPickedCell;
     CellUI sndPickedCell;
     
@@ -18,12 +18,19 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         anim = GetComponent<Animation>();
-        generatingBoardText.SetActive(true);
-        transform.localScale = Vector3.zero;
         grid = new Grid(8,8);
+
+        InitialBoardSetUp();
+
         CellUI.onCellClicked += CellClicked;
         SimpleSwipeDetection.onSwipe += OnSwipe;
+
         GenerateRandomGrid();
+    }
+
+    void InitialBoardSetUp () {
+        transform.localScale = Vector3.zero;
+        generatingBoardText.SetActive(true);
     }
 
     void GenerateRandomGrid () {
@@ -39,9 +46,7 @@ public class GridManager : MonoBehaviour
         }));
     }
 
-    
-
-    public void CellClicked (CellUI cell) {
+    void CellClicked (CellUI cell) {
         cell.SelectCell();
         if (!fstPickedCell) {
             fstPickedCell = cell;
@@ -51,33 +56,6 @@ public class GridManager : MonoBehaviour
             ResetButtonsState();
         }
     }
-
-    IEnumerator CheckConnections (Action finishCallback = null) {
-        bool noConn = false;
-        while (!noConn) {
-            HashSet<Cell> toSlideDown = new HashSet<Cell>();
-            noConn = true;
-            for (int i = 0; i < grid.width; i++) {
-                for (int j = 0; j < grid.height; j++) {
-                    var c = grid.GetCell(i,j);
-                    var conn = grid.GetConnectedLines(c);
-                    if (conn.Count > 0 ) {
-                        noConn = false;
-                        toSlideDown.UnionWith(conn);
-                    }
-                }
-            }
-            List<IEnumerator> cellCoro = new List<IEnumerator>();
-            foreach (var c in toSlideDown) cellCoro.Add(SlideDownPieces(c));
-
-            yield return this.WaitAll(cellCoro);
-        }
-        finishCallback?.Invoke();
-        yield break;
-    }
-
-    public bool checkAll;
-    public bool parcialConn;
 
     void TwoCellsPickedActions (CellUI fst, CellUI snd) {
         bool areNeighb = SpawCellPositions(fst, snd);
@@ -94,8 +72,6 @@ public class GridManager : MonoBehaviour
             StartCoroutine(CheckConnections());
         }
     }
-
-
 
     void OnSwipe (Vector2Int dir, CellUI fstCell) {
         var sndCell = grid.GetCell(fstCell.GetCell().x - dir.y, fstCell.GetCell().y + dir.x);
@@ -121,6 +97,32 @@ public class GridManager : MonoBehaviour
         a.transform.SetSiblingIndex(bSilb);
         b.transform.SetSiblingIndex(aSilb);
         return true;
+    }
+
+    #region enumerators
+
+    IEnumerator CheckConnections (Action finishCallback = null) {
+        bool noConn = false;
+        while (!noConn) {
+            HashSet<Cell> toSlideDown = new HashSet<Cell>();
+            noConn = true;
+            for (int i = 0; i < grid.width; i++) {
+                for (int j = 0; j < grid.height; j++) {
+                    var c = grid.GetCell(i,j);
+                    var conn = grid.GetConnectedLines(c);
+                    if (conn.Count > 0 ) {
+                        noConn = false;
+                        toSlideDown.UnionWith(conn);
+                    }
+                }
+            }
+            List<IEnumerator> cellCoro = new List<IEnumerator>();
+            foreach (var c in toSlideDown) cellCoro.Add(SlideDownPieces(c));
+
+            yield return this.WaitAll(cellCoro);
+        }
+        finishCallback?.Invoke();
+        yield break;
     }
 
     IEnumerator SlideDownPieces (Cell cell) {
@@ -149,18 +151,5 @@ public class GridManager : MonoBehaviour
         b.ClearError();
         yield break;
     }
-
-    /// <summary>
-    /// Update is called every frame, if the MonoBehaviour is enabled.
-    /// </summary>
-    public bool reset;
-    void Update()
-    {
-        if (reset) {
-            reset = false;
-            grid.ForEachElement(c => {
-                c.ResetCell();
-            });
-        }
-    }
+    #endregion
 }

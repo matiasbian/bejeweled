@@ -79,7 +79,6 @@ public class Grid
     }
 
     public bool IsNeighbour (Cell a, Cell b) {
-        
         return GetNeighboringCells(a).Contains(b);
     }
 

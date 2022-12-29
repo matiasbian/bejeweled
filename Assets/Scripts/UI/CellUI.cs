@@ -14,7 +14,6 @@ public class CellUI : MonoBehaviour
 
     Cell cell;
     Animator animator;
-    // Start is called before the first frame update
     void Awake()
     {
         animator = GetComponent<Animator>();
@@ -46,7 +45,6 @@ public class CellUI : MonoBehaviour
     }
 
     void HideCell (Cell cell) {
-        //sprite.color = Color.clear;//new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.3f);
         animator.SetTrigger("Hide");
         cell.hidden = false;
     }
