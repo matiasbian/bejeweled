@@ -22,29 +22,24 @@ public class GridManager : MonoBehaviour
         transform.localScale = Vector3.zero;
         grid = new Grid(8,8);
         CellUI.onCellClicked += CellClicked;
+        SimpleSwipeDetection.onSwipe += OnSwipe;
         GenerateRandomGrid();
     }
 
     void GenerateRandomGrid () {
-        grid = RandomGridFill(grid);
+        grid.RandomGridFill();
         grid.ForEachElement(c => {
             var instance = Instantiate<CellUI>(cellPrefab, parent: cellsContainer);
             instance.SetCell(c);
         });
+        
         StartCoroutine(CheckConnections(() => {
             generatingBoardText.SetActive(false);
             anim.Play();
         }));
     }
 
-    public Grid RandomGridFill (Grid grid) {
-        for (int i = 0; i < grid.GetRowsAmount(); i++) {
-            for (int j = 0; j < grid.GetColumnsAmount(); j ++) {
-                grid.SetValue(i,j, Cell.GetRandomCell(i, j));
-            }
-        }
-        return grid;
-    }
+    
 
     public void CellClicked (CellUI cell) {
         cell.SelectCell();
@@ -52,9 +47,7 @@ public class GridManager : MonoBehaviour
             fstPickedCell = cell;
         } else {
             sndPickedCell = cell;
-
-            TwoCellsPickedActions();
-
+            TwoCellsPickedActions(fstPickedCell, sndPickedCell);
             ResetButtonsState();
         }
     }
@@ -63,7 +56,6 @@ public class GridManager : MonoBehaviour
         bool noConn = false;
         while (!noConn) {
             HashSet<Cell> toSlideDown = new HashSet<Cell>();
-            Debug.Log("ITERATE");
             noConn = true;
             for (int i = 0; i < grid.width; i++) {
                 for (int j = 0; j < grid.height; j++) {
@@ -84,32 +76,30 @@ public class GridManager : MonoBehaviour
         yield break;
     }
 
-    /*void CheckSpecificConnections (List<Cell> cells) {
-        cells.ForEach(c => {
-            var conn = grid.GetConnectedLines(c);
-            conn.ForEach(c => {
-                c.HideCell();
-            });
-        });
-    }*/
-
     public bool checkAll;
     public bool parcialConn;
 
-    void TwoCellsPickedActions () {
-        bool areNeighb = SpawCellPositions(fstPickedCell, sndPickedCell);
+    void TwoCellsPickedActions (CellUI fst, CellUI snd) {
+        bool areNeighb = SpawCellPositions(fst, snd);
 
         if (!areNeighb) return;
 
-        bool firstCellGeneratesConn = grid.GetConnectedLines(fstPickedCell.GetCell()).Count > 2;
-        bool sndCellGeneratesConn = grid.GetConnectedLines(sndPickedCell.GetCell()).Count > 2;
+        bool firstCellGeneratesConn = grid.GetConnectedLines(fst.GetCell()).Count > 2;
+        bool sndCellGeneratesConn = grid.GetConnectedLines(snd.GetCell()).Count > 2;
         
         if (!firstCellGeneratesConn && !sndCellGeneratesConn) {
             Debug.LogWarning("This swipe is not generating a new connection, undoing");
-            SpawCellPositions(fstPickedCell, sndPickedCell);
+            SpawCellPositions(fst, snd);
         } else {
             StartCoroutine(CheckConnections());
         }
+    }
+
+
+
+    void OnSwipe (Vector2Int dir, CellUI fstCell) {
+        var sndCell = grid.GetCell(fstCell.GetCell().x - dir.y, fstCell.GetCell().y + dir.x);
+        TwoCellsPickedActions(fstCell, sndCell.ui);
     }
 
     void ResetButtonsState () {
@@ -138,14 +128,11 @@ public class GridManager : MonoBehaviour
         Cell cellOver = grid.GetOverCell(cell);
         cell.HideCell();
         yield return new WaitForSeconds(0.3f);
-        Debug.Log("Start SWIPPING");
         while (cellOver != null) {
-            Debug.Log("SWIPPING");
             SpawCellPositions(cell.ui, cellOver.ui);
             cellOver = grid.GetOverCell(cell);
             yield return new WaitForSeconds(0.05f);
         }
-        Debug.Log("GENERATING NEW cell");
         cell.EnableCell();
         cell.CreateNewOne();
         

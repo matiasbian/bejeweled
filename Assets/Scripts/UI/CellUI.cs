@@ -7,8 +7,11 @@ using System;
 public class CellUI : MonoBehaviour
 {
     public Image sprite;
+    public Image icon;
     public TextMeshProUGUI text;
     public static Action<CellUI> onCellClicked;
+    public Outline outline;
+
     Cell cell;
     Animator animator;
     // Start is called before the first frame update
@@ -18,18 +21,12 @@ public class CellUI : MonoBehaviour
     }
 
     public void SetCell (Cell cell) {
-        sprite.color = cell.GetTypeColor();
         this.cell = cell;
-        UpdateText(cell);
-        cell.onUpdateCell += UpdateText; 
         cell.onUpdateCell += UpdateColor;
         cell.onHide += HideCell; 
         cell.SetCellUI(this);
         cell.newCell += NewCell;
-    }
-
-    void UpdateText (Cell cell) {
-        text.text = cell.type.ToString() + " x " + cell.y + " y " + cell.x;
+        UpdateColor(cell);
     }
 
     void UpdateColor (Cell cell) {
@@ -37,7 +34,10 @@ public class CellUI : MonoBehaviour
             sprite.color = Color.white;
             return;
         }
-        sprite.color = cell.colors[(int) cell.type];
+
+        int index = (int) cell.type;
+        sprite.color = cell.GetTypeColor();
+        icon.sprite = cell.GetTypeSprite();
     }
 
     void HideCell (Cell cell) {
@@ -55,11 +55,11 @@ public class CellUI : MonoBehaviour
     }
     
     public void SelectCell () {
-        sprite.color = Color.white;
+        outline.enabled = true;
     }
 
     public void UnselectCell () {
-        UpdateColor(cell);
+        outline.enabled = false;
     }
 
     public Cell GetCell() {

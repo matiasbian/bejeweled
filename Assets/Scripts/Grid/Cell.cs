@@ -8,8 +8,7 @@ public class Cell
 {
     const int TYPES_LENGHT = 5;
 
-    public enum Type {A, B, C, D, E}
-    public Color[] colors = new Color[5] {Color.red, Color.blue, Color.yellow, Color.magenta, Color.green};
+    public enum Type {Lemon = 0, Orange = 1, Banana = 2, Watermelon = 3, Grape = 4}
     public Type type;
     public int x;
     public int y;
@@ -66,7 +65,11 @@ public class Cell
     }
 
     public Color GetTypeColor () {
-        return colors[(int) type];
+        return ImageManager.Get().colors[(int) type];
+    }
+
+    public Sprite GetTypeSprite () {
+        return ImageManager.Get().icons[(int) type];
     }
 
     public void CreateNewOne () {

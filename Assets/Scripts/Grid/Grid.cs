@@ -16,6 +16,14 @@ public class Grid
         grid = new Cell[height, width];
     }
 
+    public void RandomGridFill () {
+        for (int i = 0; i < GetRowsAmount(); i++) {
+            for (int j = 0; j < GetColumnsAmount(); j ++) {
+                SetValue(i,j, Cell.GetRandomCell(i, j));
+            }
+        }
+    }
+
     public int GetRowsAmount () {
         return height;
     }
