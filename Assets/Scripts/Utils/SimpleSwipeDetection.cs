@@ -25,18 +25,41 @@ public class SimpleSwipeDetection : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.touches.Length == 0) return;
+        if (Input.touches.Length == 0) {
+            MouseDetection();
+        } else {
+            TouchDetection();
+        }
+    }
 
+    void TouchDetection () {
         Touch touch = Input.GetTouch(0);
 
         if (touch.phase == TouchPhase.Began) {
-            touchPos = touch.position;
+            InputBegan(touch.position);
         }
         if (touch.phase == TouchPhase.Ended) {
-            if (Vector2.Distance(touch.position, touchPos) < 55) return;
-            var dir = (touch.position - touchPos).normalized;
-            CheckDirection(dir, touchPos);
+            InputEnded(touch.position);
         }
+    }
+
+    void MouseDetection () {
+        if (Input.GetMouseButtonDown(0)) {
+            InputBegan(Input.mousePosition);
+        }
+        if (Input.GetMouseButtonUp(0)) {
+            InputEnded(Input.mousePosition);
+        }
+    }
+
+    void InputBegan (Vector2 pos) {
+        touchPos = pos;
+    }
+
+    void InputEnded (Vector2 pos) {
+        if (Vector2.Distance(pos, touchPos) < 55) return;
+            var dir = (pos - touchPos).normalized;
+            CheckDirection(dir, touchPos);
     }
 
     void CheckDirection (Vector2 dir, Vector2 initialPos) {
